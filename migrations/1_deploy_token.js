@@ -3,5 +3,6 @@ const ArcheToken = artifacts.require("ArcheToken");
 module.exports = function (deployer) {
 	const name = "Arche Token";
 	const symbol = "ARCHE";
-	deployer.deploy(ArcheToken, name, symbol);
+	const decimals = 18;
+	deployer.deploy(ArcheToken, name, symbol, decimals);
 };
