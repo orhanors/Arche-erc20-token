@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/orhanors/Arche-erc20-token#readme",
   "dependencies": {
-    "openzeppelin-solidity": "^4.2.0"
+    "@openzeppelin/contracts": "^2.5.1"
   },
   "devDependencies": {
     "dotenv": "^10.0.0"
