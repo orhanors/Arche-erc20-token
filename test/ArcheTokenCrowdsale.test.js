@@ -1,4 +1,11 @@
 const { ether, BN } = require("./helpers/ether");
+const {
+	latest,
+	duration,
+	increase,
+	increaseTo,
+	advanceBlock,
+} = require("./helpers/time");
 const BigNumber = web3.utils.BN;
 
 const ArcheToken = artifacts.require("ArcheToken");
@@ -9,7 +16,7 @@ require("chai")
 	.use(require("chai-bignumber")(BigNumber))
 	.should();
 
-contract("ArcheTokenCrowdsale", (accounts) => {
+contract("ArcheTokenCrowdsale", async (accounts) => {
 	//Accounts
 	const investor1 = accounts[2];
 	const investor2 = accounts[3];
@@ -26,19 +33,35 @@ contract("ArcheTokenCrowdsale", (accounts) => {
 	const _rate = 500; //How many tokens can I get for ETH?
 	const _wallet = accounts[1];
 	const _cap = ether("100"); //We'll accept 100 ETH for the crowdsale
+
 	const _investorMinCap = ether("0.002");
 	const _investorHardCap = ether("5");
+	let _openingTime;
+	let _closingTime;
+	let _afterClosingTime;
+
 	beforeEach(async () => {
+		_openingTime = (await latest()).add(duration.weeks(1));
+		_closingTime = _openingTime.add(duration.weeks(1));
+		_afterClosingTime = _closingTime.add(duration.seconds(1));
+
 		arche = await ArcheToken.new(_name, _symbol, _decimals);
+
 		crowdsale = await ArcheTokenCrowdsale.new(
 			_rate,
 			_wallet,
 			arche.address,
-			_cap
+			_cap,
+			_openingTime,
+			_closingTime
 		);
 
 		//Adding minter to send transaction
 		await arche.addMinter(crowdsale.address);
+
+		//Advance blockchain time to crowdsale start
+
+		await increaseTo(_openingTime);
 	});
 
 	describe("crowdsale", () => {
@@ -80,6 +103,33 @@ contract("ArcheTokenCrowdsale", (accounts) => {
 			assert(cap instanceof BigNumber);
 		});
 	});
+
+	describe("timed crowdsale", () => {
+		it("rejects transactions before the opening time", async () => {
+			const isOpen = await crowdsale.isOpen();
+			assert.ok(isOpen, false);
+
+			const newOpeningTime = (await latest()).add(duration.weeks(1));
+			await increaseTo(newOpeningTime.sub(duration.seconds(1)));
+
+			try {
+				await crowdsale.sendTransaction({ value, from: investor1 });
+				assert(false);
+			} catch (error) {
+				assert(error);
+			}
+		});
+
+		it("rejects transactions after the closing time", async () => {
+			await increaseTo(_afterClosingTime);
+			const isOpen = crowdsale.isOpen();
+			const hasClosed = crowdsale.hasClosed();
+
+			assert.ok(isOpen, false);
+			assert.ok(hasClosed, true);
+		});
+	});
+
 	describe("accepting payments", () => {
 		it("should accept payments", async () => {
 			const value = ether("1");

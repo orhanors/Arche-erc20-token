@@ -14,7 +14,7 @@ contract("ArcheToken", (accounts) => {
 	describe("token attributes", () => {
 		it("has correct name", async () => {
 			const _name = await arche.name();
-			console.log("namee::", _name);
+
 			assert.strictEqual(name, _name);
 		});
 

@@ -3,17 +3,19 @@ pragma solidity >=0.5.5;
 import "@openzeppelin/contracts/crowdsale/Crowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/validation/CappedCrowdsale.sol";
+import "@openzeppelin/contracts/crowdsale/validation/TimedCrowdsale.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract ArcheTokenCrowdsale is Crowdsale,MintedCrowdsale,CappedCrowdsale {
+contract ArcheTokenCrowdsale is Crowdsale,MintedCrowdsale,CappedCrowdsale,TimedCrowdsale {
     
     uint public investorMinCap = 2000000000000000; //0.002 ETH 
     uint public investorHardCap = 5000000000000000000; //5 ETH
     
     mapping(address => uint) public contributions;
-    constructor(uint _rate,address payable _wallet, ERC20 _token, uint256 _cap) 
+    constructor(uint _rate,address payable _wallet, ERC20 _token, uint256 _cap,uint256 _openingTime,uint256 _closingTime) 
     Crowdsale(_rate,_wallet,_token) 
     CappedCrowdsale(_cap)
+    TimedCrowdsale(_openingTime,_closingTime)
     public{
     }
     
