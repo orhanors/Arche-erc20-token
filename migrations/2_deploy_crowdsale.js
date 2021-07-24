@@ -5,6 +5,7 @@ const ArcheTokenCrowdsale = artifacts.require("ArcheTokenCrowdsale");
 
 module.exports = (deployer) => {
 	deployer.then(async () => {
+		let goal = new web3.utils.BN(web3.utils.toWei("20", "ether"));
 		let cap = new web3.utils.BN(web3.utils.toWei("100", "ether"));
 		let token = await ArcheToken.deployed();
 		token = token.address;
@@ -22,7 +23,8 @@ module.exports = (deployer) => {
 			token,
 			cap,
 			openingTime,
-			closingTime
+			closingTime,
+			goal
 		);
 	});
 };

@@ -33,6 +33,7 @@ contract("ArcheTokenCrowdsale", async (accounts) => {
 	const _rate = 500; //How many tokens can I get for ETH?
 	const _wallet = accounts[1];
 	const _cap = ether("100"); //We'll accept 100 ETH for the crowdsale
+	const _goal = ether("20"); // Minimum goal... If the goal is not reached, the users can "claimRefund" to get their Ether back.
 
 	const _investorMinCap = ether("0.002");
 	const _investorHardCap = ether("5");
@@ -53,7 +54,8 @@ contract("ArcheTokenCrowdsale", async (accounts) => {
 			arche.address,
 			_cap,
 			_openingTime,
-			_closingTime
+			_closingTime,
+			_goal
 		);
 
 		//Adding minter to send transaction
@@ -130,6 +132,26 @@ contract("ArcheTokenCrowdsale", async (accounts) => {
 		});
 	});
 
+	describe("refundable crowdsale", () => {
+		beforeEach(async () => {
+			await crowdsale.buyTokens(investor1, {
+				from: investor1,
+				value: ether("1"),
+			});
+		});
+
+		describe("during crowdsale", () => {
+			it("prevents investor from claiming refund", async () => {
+				try {
+					//This should throw "not finalized error"
+					await crowdsale.claimRefund(investor1);
+					assert(false);
+				} catch (error) {
+					assert(error);
+				}
+			});
+		});
+	});
 	describe("accepting payments", () => {
 		it("should accept payments", async () => {
 			const value = ether("1");

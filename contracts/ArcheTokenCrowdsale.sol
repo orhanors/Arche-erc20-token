@@ -4,19 +4,24 @@ import "@openzeppelin/contracts/crowdsale/Crowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/emission/MintedCrowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/validation/CappedCrowdsale.sol";
 import "@openzeppelin/contracts/crowdsale/validation/TimedCrowdsale.sol";
+import "@openzeppelin/contracts/crowdsale/distribution/RefundableCrowdsale.sol";
+import "@openzeppelin/contracts/crowdsale/distribution/RefundablePostDeliveryCrowdsale.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract ArcheTokenCrowdsale is Crowdsale,MintedCrowdsale,CappedCrowdsale,TimedCrowdsale {
+contract ArcheTokenCrowdsale is Crowdsale,MintedCrowdsale,CappedCrowdsale,TimedCrowdsale,RefundableCrowdsale,RefundablePostDeliveryCrowdsale {
     
     uint public investorMinCap = 2000000000000000; //0.002 ETH 
     uint public investorHardCap = 5000000000000000000; //5 ETH
     
     mapping(address => uint) public contributions;
-    constructor(uint _rate,address payable _wallet, ERC20 _token, uint256 _cap,uint256 _openingTime,uint256 _closingTime) 
+    constructor(uint _rate,address payable _wallet, ERC20 _token, uint256 _cap,uint256 _openingTime,uint256 _closingTime,uint256 _goal) 
     Crowdsale(_rate,_wallet,_token) 
     CappedCrowdsale(_cap)
     TimedCrowdsale(_openingTime,_closingTime)
+    RefundableCrowdsale(_goal)
+    RefundablePostDeliveryCrowdsale()
     public{
+        require(_goal <= _cap,"ArcheCrowdsale: Goal should be less than cap");
     }
     
     function getUserContribution(address _beneficiary) public view returns(uint) {
